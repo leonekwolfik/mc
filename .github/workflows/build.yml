@@ -8,30 +8,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.build-image.outputs.image }}
+      image-path: ${{ steps.build-image.outputs.image_path }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Test Directory
-        run: |
-          ls -la $GITHUB_WORKSPACE
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
         id: build-image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile
+          file: ./Dockerfile
           push: false
           tags: mc-web-ubuntu:latest
-          outputs: type=oci,dest=image.tar
+          outputs: type=docker,dest=image.tar
 
       - name: Upload built image artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: built-image
           path: image.tar
@@ -41,42 +37,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download built image
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v4
         with:
           name: built-image
           path: .
 
-      - name: Load image into Docker
+      - name: Show image file
         run: |
-          docker load -i image.tar
+          ls -lh image.tar
+          file image.tar || true
+
+      - name: Load image into Docker
+        run: docker load -i image.tar
 
       - name: Run container for smoke test
         run: |
-          # start container in background mapping to arbitrary host port 27681
           docker run -d --name mc-smoke -p 27681:7681 mc-web-ubuntu:latest
-          # wait for container to be healthy/responding (timeout 30s)
           for i in {1..30}; do
             sleep 1
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -q '^2\|^3'; then
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -qE '^[23]'; then
               echo "service is responding"
               break
             fi
             echo "waiting for service..."
           done
-          # if not responding, dump logs and fail
-          if ! curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -q '^2\|^3'; then
+          if ! curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -qE '^[23]'; then
             echo "Service did not start in time - dumping logs"
             docker logs mc-smoke || true
             docker ps -a || true
             exit 1
           fi
 
-      - name: Run a simple interactive command via docker exec
-        run: |
-          # ensure bash is responsive
-          docker exec mc-smoke bash -c 'echo hello-from-container' | grep -q hello-from-container
+      - name: Run a simple command via docker exec
+        run: docker exec mc-smoke bash -c 'echo hello-from-container' | grep -q hello-from-container
 
       - name: Stop and remove container
         if: always()
-        run: |
-          docker rm -f mc-smoke || true
+        run: docker rm -f mc-smoke || true
