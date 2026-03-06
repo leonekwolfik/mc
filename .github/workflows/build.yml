@@ -1,80 +1,96 @@
-name: Build and test mc-web-ubuntu
+# .github/workflows/docker-publish.yml
+name: Build and Push Docker Images
 
 on:
   push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push image
-        id: build-image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Ubuntu image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: Dockerfile.ubuntu
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mc-web-ubuntu:latest
-          outputs: type=docker,dest=image.tar
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:ubuntu
 
-      - name: Upload built image artifact
-        uses: actions/upload-artifact@v4
+      - name: Build and push Alpine image (+ latest)
+        uses: docker/build-push-action@v5
         with:
-          name: built-image
-          path: image.tar
+          context: .
+          file: Dockerfile.alpine
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:alpine
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:latest
 
-  smoke-test:
-    needs: build
+  test:
     runs-on: ubuntu-latest
+    needs: build-and-push
+    strategy:
+      matrix:
+        tag: [ubuntu, alpine]
+
     steps:
-      - name: Download built image
-        uses: actions/download-artifact@v4
-        with:
-          name: built-image
-          path: .
+      - name: Pull image
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }}
 
-      - name: Show image file
+      - name: Test - kontener startuje i nie pada
         run: |
-          ls -lh image.tar
-          file image.tar || true
+          docker run --rm -d --name test_${{ matrix.tag }} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }}
+          sleep 3
+          docker inspect test_${{ matrix.tag }} --format='{{.State.Status}}' | grep -q running
+          docker stop test_${{ matrix.tag }}
 
-      - name: Load image into Docker
-        run: docker load -i image.tar
-
-      - name: Run container for smoke test
+      - name: Test - mc jest zainstalowany
         run: |
-          docker run -d --name mc-smoke -p 27681:7681 ${{ secrets.DOCKERHUB_USERNAME }}/mc-web-ubuntu:latest
-          for i in {1..30}; do
-            sleep 1
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -qE '^[23]'; then
-              echo "service is responding"
-              break
-            fi
-            echo "waiting for service..."
-          done
-          if ! curl -s -o /dev/null -w "%{http_code}" http://localhost:27681/ | grep -qE '^[23]'; then
-            echo "Service did not start in time - dumping logs"
-            docker logs mc-smoke || true
-            docker ps -a || true
-            exit 1
-          fi
+          docker run --rm \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            bash -c "which mc && mc --version"
 
-      - name: Run a simple command via docker exec
-        run: docker exec mc-smoke bash -c 'echo hello-from-container' | grep -q hello-from-container
+      - name: Test - ttyd jest zainstalowany
+        run: |
+          docker run --rm \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            bash -c "which ttyd && ttyd --version"
 
-      - name: Stop and remove container
-        if: always()
-        run: docker rm -f mc-smoke || true
+      - name: Test - tini jest zainstalowany
+        run: |
+          docker run --rm --entrypoint tini \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            -- echo "tini OK"
+
+      - name: Test - snapshot katalogów istnieje
+        run: |
+          docker run --rm \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            bash -c "test -f /etc/system_dirs_snapshot.txt && echo 'snapshot OK' && cat /etc/system_dirs_snapshot.txt"
+
+      - name: Test - entrypoint.sh istnieje i jest wykonywalny
+        run: |
+          docker run --rm \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            bash -c "test -x /entrypoint.sh && echo 'entrypoint OK'"
+
+      - name: Test - port 7681 jest wyeksponowany
+        run: |
+          docker inspect ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
+            --format='{{json .Config.ExposedPorts}}' | grep -q "7681"
