@@ -29,6 +29,7 @@ jobs:
           context: .
           file: Dockerfile.ubuntu
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:ubuntu
 
       - name: Build and push Alpine image (+ latest)
@@ -37,9 +38,12 @@ jobs:
           context: .
           file: Dockerfile.alpine
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:alpine
             ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:latest
+
+
 
   test:
     runs-on: ubuntu-latest
@@ -94,7 +98,7 @@ jobs:
         run: |
           docker inspect ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
             --format='{{json .Config.ExposedPorts}}' | grep -q "7681"
-            
+
       - name: Test - wykrycie zamontowanego wolumenu jako katalog startowy MC
         run: |
           RANDOM_DIR=$(mktemp -d /tmp/truenas_volume_XXXXXX)
