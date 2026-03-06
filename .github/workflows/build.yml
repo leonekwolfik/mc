@@ -94,3 +94,25 @@ jobs:
         run: |
           docker inspect ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
             --format='{{json .Config.ExposedPorts}}' | grep -q "7681"
+            
+      - name: Test - wykrycie zamontowanego wolumenu jako katalog startowy MC
+        run: |
+          RANDOM_DIR=$(mktemp -d /tmp/truenas_volume_XXXXXX)
+          VOLUME_NAME=$(basename $RANDOM_DIR)
+
+          RESULT=$(docker run --rm \
+            -e ENTRYPOINT_TEST_MODE=1 \
+            -v "$RANDOM_DIR:/$VOLUME_NAME" \
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }})
+
+          echo "Wykryty katalog startowy: $RESULT"
+          echo "Oczekiwany katalog: /$VOLUME_NAME"
+
+          if [ "$RESULT" = "/$VOLUME_NAME" ]; then
+            echo "✅ Test passed"
+          else
+            echo "❌ Test failed - MC nie wystartował w zamontowanym katalogu"
+            exit 1
+          fi
+
+          rm -rf $RANDOM_DIR
