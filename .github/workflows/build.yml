@@ -108,7 +108,7 @@ jobs:
           RESULT=$(docker run --rm \
             -e ENTRYPOINT_TEST_MODE=1 \
             -v "$RANDOM_DIR:/$VOLUME_NAME" \
-            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }})
+            ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} | tail -1)
 
           echo "Wykryty katalog startowy: $RESULT"
           echo "Oczekiwany katalog: /$VOLUME_NAME"
