@@ -1,0 +1,18 @@
+# Dockerfile.alpine
+FROM alpine:latest
+RUN apk add --no-cache \
+    ttyd \
+    tini \
+    bash \
+    mc \
+    ca-certificates
+
+RUN ls / > /etc/system_dirs_snapshot.txt
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 7681
+WORKDIR /root
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["/entrypoint.sh"]
