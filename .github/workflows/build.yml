@@ -64,7 +64,7 @@ jobs:
         run: |
           docker run --rm \
             ${{ secrets.DOCKERHUB_USERNAME }}/midnight-commander:${{ matrix.tag }} \
-            bash -c "which mc && mc --version"
+            bash -c "which mc && TERM=xterm mc --version"
 
       - name: Test - ttyd jest zainstalowany
         run: |
