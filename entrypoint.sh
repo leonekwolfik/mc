@@ -34,4 +34,4 @@ if [ "$ENTRYPOINT_TEST_MODE" = "1" ]; then
     exit 0
 fi
 
-exec ttyd -W bash -c "mc \"$START_DIR\"; bash"
+exec ttyd -W tmux new-session -A -s mc "mc \"$START_DIR\"; bash"
