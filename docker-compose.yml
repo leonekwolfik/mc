@@ -1,0 +1,9 @@
+services:
+  midnight-commander:
+    image: leonekwolfik/midnight-commander:latest
+    container_name: midnight-commander
+    ports:
+      - "7681:7681"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
