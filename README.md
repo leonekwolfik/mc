@@ -4,6 +4,8 @@ Run the classic **Midnight Commander** file manager directly in your browser, po
 
 The container exposes port **7681**. Open `http://localhost:7681` in your browser to access MC.
 
+Both the Alpine and Ubuntu images ship with **SMB/CIFS support built in** (`samba-client` / `smbclient`), so you can browse network shares directly inside Midnight Commander without any extra packages on the host.
+
 ---
 
 ## Quick Start
@@ -74,11 +76,35 @@ volumes:
 
 ---
 
-### docker compose with SMB share
+## SMB / CIFS Support
+
+There are two ways to access SMB/CIFS shares with this container.
+
+### Option 1 — Browse SMB shares directly inside MC (no host setup needed)
+
+Both images include the Samba client utilities (`samba-client` on Alpine, `smbclient` on Ubuntu).  
+Midnight Commander has a built-in SMB VFS panel — press **`Ctrl+\`** (or go to **Panel → Change directory** / use the **cd** command bar) and type an `smb://` URL:
+
+```
+smb://192.168.1.100/sharename
+smb://myuser:mypassword@192.168.1.100/sharename
+```
+
+MC will list the share contents in the active panel, letting you copy, move and delete files just like local ones.
+
+You can also invoke `smbclient` directly in the built-in shell:
+
+```bash
+smbclient //192.168.1.100/sharename -U myuser
+```
+
+---
+
+### Option 2 — Mount an SMB share as a Docker volume (CIFS driver)
 
 You can mount a network SMB/CIFS share directly in `docker-compose.yml` without mounting it on the host first.
 
-Create a `docker-compose.yml` with a named volume using the `cifs` driver:
+Create (or edit) `docker-compose.yml` with a named volume that uses the `cifs` driver:
 
 ```yaml
 services:
@@ -123,15 +149,20 @@ Replace `192.168.1.100` with your NAS/server IP, `sharename` with the share name
 > sudo chmod 600 /etc/samba/mc-credentials
 > ```
 
-> **Note:** The `cifs-utils` package must be installed on the **host** (not inside the container) for CIFS mounts to work:
+> **Note:** For the CIFS Docker volume driver (Option 2), the `cifs-utils` package must be installed on the **host** (not inside the container):
 >
 > ```bash
-> # Debian/Ubuntu
+> # Debian/Ubuntu host
 > sudo apt-get install cifs-utils
 >
-> # Alpine
+> # RHEL/CentOS host
+> sudo yum install cifs-utils
+>
+> # Alpine host
 > sudo apk add cifs-utils
 > ```
+>
+> Option 1 (browsing via `smb://` inside MC) works without any host-side packages.
 
 ---
 

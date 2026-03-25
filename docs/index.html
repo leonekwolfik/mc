@@ -197,6 +197,11 @@
       <h3>Alpine &amp; Ubuntu</h3>
       <p>Choose between a minimal Alpine image or a full Ubuntu base, depending on your needs.</p>
     </div>
+    <div class="feature">
+      <div class="feature-icon">🌐</div>
+      <h3>SMB / CIFS</h3>
+      <p>Browse network shares directly in MC via <code>smb://</code> — no host setup required. CIFS Docker volumes also supported.</p>
+    </div>
   </div>
 
   <!-- ── Quick Start ─────────────────────────────── -->
@@ -248,6 +253,51 @@ docker build -f Dockerfile.alpine -t leonekwolfik/midnight-commander .
 
 # Ubuntu
 docker build -f Dockerfile.ubuntu -t leonekwolfik/midnight-commander .</code></pre>
+  </div>
+
+  <!-- ── SMB / CIFS ────────────────────────────── -->
+  <div class="section">
+    <h2>SMB / CIFS Support</h2>
+
+    <h3 style="margin-bottom:.5rem;font-size:1rem;">Option 1 — Browse SMB shares directly inside MC</h3>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">
+      Both images ship with Samba client tools (<code>samba-client</code> on Alpine, <code>smbclient</code> on Ubuntu).
+      In MC press <kbd>Ctrl+\</kbd> or use the <em>cd</em> command bar and type an <code>smb://</code> URL:
+    </p>
+    <pre><code>smb://192.168.1.100/sharename
+smb://myuser:mypassword@192.168.1.100/sharename</code></pre>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">You can also use <code>smbclient</code> directly in the built-in shell:</p>
+    <pre><code>smbclient //192.168.1.100/sharename -U myuser</code></pre>
+    <p style="color:var(--text-dim);">No host-side packages needed for this option.</p>
+
+    <h3 style="margin:1.25rem 0 .5rem;font-size:1rem;">Option 2 — Mount an SMB share as a Docker volume (CIFS driver)</h3>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">
+      Use Docker's built-in <code>cifs</code> volume driver to mount the share before the container starts.
+      Add a named volume to your <code>docker-compose.yml</code>:
+    </p>
+    <pre><code>volumes:
+  smb_share:
+    driver: local
+    driver_opts:
+      type: cifs
+      o: "username=myuser,password=mypassword,vers=3.0"
+      device: "//192.168.1.100/sharename"</code></pre>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">
+      Then reference <code>smb_share:/data</code> in your service's <code>volumes</code> list.
+      This option requires <code>cifs-utils</code> installed on the <strong>host</strong>:
+    </p>
+    <pre><code># Debian/Ubuntu host
+sudo apt-get install cifs-utils
+
+# RHEL/CentOS host
+sudo yum install cifs-utils
+
+# Alpine host
+sudo apk add cifs-utils</code></pre>
+    <p style="color:var(--text-dim);">
+      For security, store credentials in a file (<code>/etc/samba/mc-credentials</code>, mode 600) and reference it via
+      <code>o: "credentials=/etc/samba/mc-credentials,vers=3.0"</code> instead of embedding them in the compose file.
+    </p>
   </div>
 
   <!-- ── Reference ──────────────────────────────── -->

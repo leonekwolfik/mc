@@ -5,7 +5,8 @@ RUN apk add --no-cache \
     tini \
     bash \
     mc \
-    ca-certificates
+    ca-certificates \
+    samba-client
 
 RUN ls / > /etc/system_dirs_snapshot.txt
 
