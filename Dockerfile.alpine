@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     bash \
     mc \
     ca-certificates \
-    samba-client
+    samba-client \
+    tmux 
 
 RUN ls / > /etc/system_dirs_snapshot.txt
 
