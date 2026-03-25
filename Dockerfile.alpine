@@ -7,7 +7,9 @@ RUN apk add --no-cache \
     mc \
     ca-certificates \
     samba-client \
-    tmux 
+    tmux  \
+    cifs-utils \
+    && rm -rf /var/cache/apk/*
 
 RUN ls / > /etc/system_dirs_snapshot.txt
 
