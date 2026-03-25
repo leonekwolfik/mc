@@ -74,6 +74,67 @@ volumes:
 
 ---
 
+### docker compose with SMB share
+
+You can mount a network SMB/CIFS share directly in `docker-compose.yml` without mounting it on the host first.
+
+Create a `docker-compose.yml` with a named volume using the `cifs` driver:
+
+```yaml
+services:
+  midnight-commander:
+    image: leonekwolfik/midnight-commander
+    ports:
+      - "7681:7681"
+    volumes:
+      - smb_share:/data
+    restart: unless-stopped
+
+volumes:
+  smb_share:
+    driver: local
+    driver_opts:
+      type: cifs
+      o: "username=myuser,password=mypassword,vers=3.0"
+      device: "//192.168.1.100/sharename"
+```
+
+Replace `192.168.1.100` with your NAS/server IP, `sharename` with the share name, and set your credentials.
+
+> **Security tip:** Avoid storing credentials in `docker-compose.yml`. Use a credentials file instead:
+>
+> ```yaml
+> driver_opts:
+>   type: cifs
+>   o: "credentials=/etc/samba/mc-credentials,vers=3.0"
+>   device: "//192.168.1.100/sharename"
+> ```
+>
+> Then create `/etc/samba/mc-credentials` on the host:
+>
+> ```
+> username=myuser
+> password=mypassword
+> ```
+>
+> Secure the file so only root can read it:
+>
+> ```bash
+> sudo chmod 600 /etc/samba/mc-credentials
+> ```
+
+> **Note:** The `cifs-utils` package must be installed on the **host** (not inside the container) for CIFS mounts to work:
+>
+> ```bash
+> # Debian/Ubuntu
+> sudo apt-get install cifs-utils
+>
+> # Alpine
+> sudo apk add cifs-utils
+> ```
+
+---
+
 ## Environment Variables
 
 | Variable              | Default | Description                                              |
