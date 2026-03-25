@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mc \
     tmux \
     ca-certificates \
+    smbclient \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ls / > /etc/system_dirs_snapshot.txt

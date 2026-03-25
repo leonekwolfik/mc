@@ -5,8 +5,9 @@ RUN apk add --no-cache \
     tini \
     bash \
     mc \
-    tmux \
-    ca-certificates
+    ca-certificates \
+    samba-client \
+    tmux 
 
 RUN ls / > /etc/system_dirs_snapshot.txt
 
