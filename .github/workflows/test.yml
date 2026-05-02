@@ -56,6 +56,12 @@ jobs:
             mc-test:${{ matrix.tag }} \
             bash -c "which ttyd && ttyd --version"
 
+      - name: Test - 7zip jest zainstalowany
+        run: |
+          docker run --rm \
+            mc-test:${{ matrix.tag }} \
+            bash -c "7z --help"
+
       - name: Test - tini jest zainstalowany
         run: |
           docker run --rm --entrypoint tini \

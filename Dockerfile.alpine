@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     samba-client \
     tmux  \
     cifs-utils \
+    p7zip \
     && rm -rf /var/cache/apk/*
 
 RUN ls / > /etc/system_dirs_snapshot.txt

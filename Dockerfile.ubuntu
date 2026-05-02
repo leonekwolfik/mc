@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     smbclient \
     cifs-utils \
+    p7zip-full \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ls / > /etc/system_dirs_snapshot.txt
