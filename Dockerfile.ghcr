@@ -1,0 +1,33 @@
+# Dockerfile.ghcr
+# Alpine-based image using pre-compiled mc binaries from build jobs
+
+# Stage 1: select the correct binary for the target platform
+FROM --platform=$BUILDPLATFORM alpine:latest AS binary-selector
+ARG TARGETARCH
+COPY binaries/mc-amd64 binaries/mc-arm64 /tmp/binaries/
+RUN cp /tmp/binaries/mc-${TARGETARCH} /mc && chmod +x /mc
+
+# Stage 2: final image
+FROM alpine:latest
+
+COPY --from=binary-selector /mc /usr/bin/mc
+
+RUN apk add --no-cache \
+        ttyd \
+        tini \
+        bash \
+        ca-certificates \
+        samba-client \
+        tmux \
+        cifs-utils && \
+    rm -rf /var/cache/apk/*
+
+RUN ls / > /etc/system_dirs_snapshot.txt
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 7681
+WORKDIR /root
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["/entrypoint.sh"]
