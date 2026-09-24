@@ -37,72 +37,7 @@ jobs:
           platforms: linux/amd64
           tags: mc-test:${{ matrix.tag }}
 
-      - name: Test - kontener startuje i nie pada
-        run: |
-          docker run --rm -d --name test_${{ matrix.tag }} mc-test:${{ matrix.tag }}
-          sleep 3
-          docker inspect test_${{ matrix.tag }} --format='{{.State.Status}}' | grep -q running
-          docker stop test_${{ matrix.tag }}
-
-      - name: Test - mc jest zainstalowany
-        run: |
-          docker run --rm \
-            mc-test:${{ matrix.tag }} \
-            bash -c "which mc && TERM=xterm mc --version"
-
-      - name: Test - ttyd jest zainstalowany
-        run: |
-          docker run --rm \
-            mc-test:${{ matrix.tag }} \
-            bash -c "which ttyd && ttyd --version"
-
-      - name: Test - 7zip jest zainstalowany
-        run: |
-          docker run --rm \
-            mc-test:${{ matrix.tag }} \
-            bash -c "7z --help"
-
-      - name: Test - tini jest zainstalowany
-        run: |
-          docker run --rm --entrypoint tini \
-            mc-test:${{ matrix.tag }} \
-            -- echo "tini OK"
-
-      - name: Test - snapshot katalogów istnieje
-        run: |
-          docker run --rm \
-            mc-test:${{ matrix.tag }} \
-            bash -c "test -f /etc/system_dirs_snapshot.txt && echo 'snapshot OK' && cat /etc/system_dirs_snapshot.txt"
-
-      - name: Test - entrypoint.sh istnieje i jest wykonywalny
-        run: |
-          docker run --rm \
-            mc-test:${{ matrix.tag }} \
-            bash -c "test -x /entrypoint.sh && echo 'entrypoint OK'"
-
-      - name: Test - port 7681 jest wyeksponowany
-        run: |
-          docker inspect mc-test:${{ matrix.tag }} \
-            --format='{{json .Config.ExposedPorts}}' | grep -q "7681"
-
-      - name: Test - wykrycie zamontowanego wolumenu jako katalog startowy MC
-        run: |
-          RANDOM_DIR=$(mktemp -d /tmp/truenas_volume_XXXXXX)
-          VOLUME_NAME=$(basename $RANDOM_DIR)
-
-          RESULT=$(docker run --rm \
-            -e ENTRYPOINT_TEST_MODE=1 \
-            -v "$RANDOM_DIR:/$VOLUME_NAME" \
-            mc-test:${{ matrix.tag }} | tail -1)
-
-          echo "Wykryty katalog startowy: $RESULT"
-          echo "Oczekiwany katalog: /$VOLUME_NAME"
-
-          if [ "$RESULT" = "/$VOLUME_NAME" ]; then
-            echo "✅ Test passed"
-          else
-            echo "❌ Test failed - MC nie wystartował w zamontowanym katalogu"
-            exit 1
-          fi
-
-          rm -rf $RANDOM_DIR
+      - name: Run tests
+        uses: ./.github/actions/docker-tests
+        with:
+          image: mc-test:${{ matrix.tag }}
