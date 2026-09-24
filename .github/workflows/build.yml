@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        tag: [ubuntu, alpine]
+        tag: [alpine]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -46,7 +46,7 @@ jobs:
     needs: build-and-test
     strategy:
       matrix:
-        tag: [ubuntu, alpine]
+        tag: [alpine]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

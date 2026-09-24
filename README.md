@@ -1,35 +1,15 @@
-# mc — Midnight Commander in WebUI in Docker
+# Midnight Commander in Docker
 
-Run the classic **Midnight Commander** file manager directly in your browser, powered by [ttyd](https://github.com/tsl0922/ttyd) and Docker.
-
-The container exposes port **7681**. Open `http://localhost:7681` in your browser to access MC.
-
-Both the Alpine and Ubuntu images ship with **SMB/CIFS support built in** (`samba-client` / `smbclient`), so you can browse network shares directly inside Midnight Commander without any extra packages on the host.
-
----
+A web-based interface for the classic two-panel file manager, Midnight Commander, running in a lightweight Docker container.
 
 ## Quick Start
 
-### docker build
-
-Build from the Alpine-based Dockerfile (recommended – smaller image):
-
+### Pull the image
 ```bash
-docker build -f Dockerfile.alpine -t leonekwolfik/midnight-commander .
+docker pull leonekwolfik/midnight-commander
 ```
 
-Or build from the Ubuntu-based Dockerfile:
-
-```bash
-docker build -f Dockerfile.ubuntu -t leonekwolfik/midnight-commander .
-```
-
----
-
-### docker run
-
-Run the container and open `http://localhost:7681` in your browser:
-
+### Run the container
 ```bash
 docker run -d \
   --name midnight-commander \
@@ -37,7 +17,13 @@ docker run -d \
   leonekwolfik/midnight-commander
 ```
 
-Mount a local directory so you can browse it inside MC:
+### Open in your browser
+Navigate to [http://localhost:7681](http://localhost:7681).
+
+## Usage
+
+### Mount a local directory
+The container auto-detects the first mounted volume and opens MC there.
 
 ```bash
 docker run -d \
@@ -47,75 +33,46 @@ docker run -d \
   leonekwolfik/midnight-commander
 ```
 
-The container automatically detects the first mounted volume and opens MC in that directory.
-
----
-
-### docker compose
-
-A ready-to-use `docker-compose.yml` is included in the repository.  
-It mounts a local `data/` directory and maps port 7681:
+### Docker Compose
+Clone the repo, then:
 
 ```bash
-# Start
 docker compose up -d
-
-# Open in browser
-open http://localhost:7681
-
-# Stop
-docker compose down
 ```
 
-To mount a different directory, edit the `volumes` section in `docker-compose.yml`:
+The included `docker-compose.yml` mounts a local `data/` folder and maps port 7681.
 
-```yaml
-volumes:
-  - /path/to/your/files:/data
+## Build from source
+
+```bash
+# Alpine (recommended — smaller image)
+docker build -f Dockerfile.alpine -t leonekwolfik/midnight-commander .
 ```
-
----
 
 ## SMB / CIFS Support
 
-There are two ways to access SMB/CIFS shares with this container.
+### Option 1 — Browse SMB shares directly inside MC
+The Alpine image ships with Samba client tools (`samba-client`).
+In MC press `Ctrl+\` or use the `cd` command bar and type an `smb://` URL:
 
-### Option 1 — Browse SMB shares directly inside MC (no host setup needed)
-
-Both images include the Samba client utilities (`samba-client` on Alpine, `smbclient` on Ubuntu).  
-Midnight Commander has a built-in SMB VFS panel — press **`Ctrl+\`** (or go to **Panel → Change directory** / use the **cd** command bar) and type an `smb://` URL:
-
-```
+```bash
 smb://192.168.1.100/sharename
 smb://myuser:mypassword@192.168.1.100/sharename
 ```
 
-MC will list the share contents in the active panel, letting you copy, move and delete files just like local ones.
-
-You can also invoke `smbclient` directly in the built-in shell:
+You can also use `smbclient` directly in the built-in shell:
 
 ```bash
 smbclient //192.168.1.100/sharename -U myuser
 ```
 
----
+No host-side packages needed for this option.
 
 ### Option 2 — Mount an SMB share as a Docker volume (CIFS driver)
-
-You can mount a network SMB/CIFS share directly in `docker-compose.yml` without mounting it on the host first.
-
-Create (or edit) `docker-compose.yml` with a named volume that uses the `cifs` driver:
+Use Docker's built-in `cifs` driver to mount the share before the container starts.
+Add a named volume to your `docker-compose.yml`:
 
 ```yaml
-services:
-  midnight-commander:
-    image: leonekwolfik/midnight-commander
-    ports:
-      - "7681:7681"
-    volumes:
-      - smb_share:/data
-    restart: unless-stopped
-
 volumes:
   smb_share:
     driver: local
@@ -125,63 +82,31 @@ volumes:
       device: "//192.168.1.100/sharename"
 ```
 
-Replace `192.168.1.100` with your NAS/server IP, `sharename` with the share name, and set your credentials.
+Then reference `smb_share:/data` in your service's `volumes` list.
+This option requires `cifs-utils` installed on the **host**:
 
-> **Security tip:** Avoid storing credentials in `docker-compose.yml`. Use a credentials file instead:
->
-> ```yaml
-> driver_opts:
->   type: cifs
->   o: "credentials=/etc/samba/mc-credentials,vers=3.0"
->   device: "//192.168.1.100/sharename"
-> ```
->
-> Then create `/etc/samba/mc-credentials` on the host:
->
-> ```
-> username=myuser
-> password=mypassword
-> ```
->
-> Secure the file so only root can read it:
->
-> ```bash
-> sudo chmod 600 /etc/samba/mc-credentials
-> ```
+```bash
+# Debian/Ubuntu host
+sudo apt-get install cifs-utils
 
-> **Note:** For the CIFS Docker volume driver (Option 2), the `cifs-utils` package must be installed on the **host** (not inside the container):
->
-> ```bash
-> # Debian/Ubuntu host
-> sudo apt-get install cifs-utils
->
-> # RHEL/CentOS host
-> sudo yum install cifs-utils
->
-> # Alpine host
-> sudo apk add cifs-utils
-> ```
->
-> Option 1 (browsing via `smb://` inside MC) works without any host-side packages.
+# RHEL/CentOS host
+sudo yum install cifs-utils
 
----
+# Alpine host
+sudo apk add cifs-utils
+```
 
-## Environment Variables
+For security, store credentials in a file (`/etc/samba/mc-credentials`, mode 600) and reference it via
+`o: "credentials=/etc/samba/mc-credentials,vers=3.0"` instead of embedding them in the compose file.
 
-| Variable              | Default | Description                                              |
-|-----------------------|---------|----------------------------------------------------------|
-| `ENTRYPOINT_TEST_MODE`| —       | Set to `1` to print the detected start directory and exit without launching ttyd (used in CI). |
+## Reference
 
----
+### Ports
+| Port | Protocol | Description |
+|------|----------|-------------|
+| 7681 | TCP      | ttyd web terminal |
 
-## Ports
-
-| Port | Protocol | Description         |
-|------|----------|---------------------|
-| 7681 | TCP      | ttyd web terminal   |
-
----
-
-## License
-
-[MIT](LICENSE)
+### Environment variables
+| Variable | Description |
+|----------|-------------|
+| `ENTRYPOINT_TEST_MODE` | Set to `1` to print the detected start directory and exit without launching ttyd (CI use). |
