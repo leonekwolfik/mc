@@ -194,13 +194,13 @@
     </div>
     <div class="feature">
       <div class="feature-icon">🪶</div>
-      <h3>Alpine &amp; Ubuntu</h3>
-      <p>Choose between a minimal Alpine image or a full Ubuntu base, depending on your needs.</p>
+      <h3>Alpine Only</h3>
+      <p>A minimal and efficient Alpine-based Docker image for production use.</p>
     </div>
     <div class="feature">
       <div class="feature-icon">🌐</div>
       <h3>SMB / CIFS</h3>
-      <p>Browse network shares directly in MC via <code>smb://</code> — no host setup required. CIFS Docker volumes also supported.</p>
+      <p>Browse network shares directly in MC via <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">smb://</em> — no host setup required. CIFS Docker volumes also supported.</p>
     </div>
   </div>
 
@@ -211,12 +211,12 @@
 
       <div class="step">
         <h3>Pull the image</h3>
-        <pre><code>docker pull leonekwolfik/midnight-commander</code></pre>
+        <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">docker pull leonekwolfik/midnight-commander</code></pre>
       </div>
 
       <div class="step">
         <h3>Run the container</h3>
-        <pre><code>docker run -d \
+        <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">docker run -d \
   --name midnight-commander \
   -p 7681:7681 \
   leonekwolfik/midnight-commander</code></pre>
@@ -236,7 +236,7 @@
 
     <h3 style="margin-bottom:.5rem;font-size:1rem;">Mount a local directory</h3>
     <p style="margin-bottom:.7rem;color:var(--text-dim);">The container auto-detects the first mounted volume and opens MC there.</p>
-    <pre><code>docker run -d \
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">docker run -d \
   --name midnight-commander \
   -p 7681:7681 \
   -v /path/to/your/files:/data \
@@ -244,15 +244,12 @@
 
     <h3 style="margin:1.25rem 0 .5rem;font-size:1rem;">docker compose</h3>
     <p style="margin-bottom:.7rem;color:var(--text-dim);">Clone the repo, then:</p>
-    <pre><code>docker compose up -d</code></pre>
-    <p style="margin-bottom:.7rem;color:var(--text-dim);">The included <code>docker-compose.yml</code> mounts a local <code>data/</code> folder and maps port 7681.</p>
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">docker compose up -d</code></pre>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">The included <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">docker-compose.yml</code> mounts a local <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">data/</code> folder and maps port 7681.</p>
 
     <h3 style="margin:1.25rem 0 .5rem;font-size:1rem;">Build from source</h3>
-    <pre><code># Alpine (recommended — smaller image)
-docker build -f Dockerfile.alpine -t leonekwolfik/midnight-commander .
-
-# Ubuntu
-docker build -f Dockerfile.ubuntu -t leonekwolfik/midnight-commander .</code></pre>
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;"># Alpine (recommended — smaller image)
+docker build -f Dockerfile.alpine -t leonekwolfik/midnight-commander .</code></pre>
   </div>
 
   <!-- ── SMB / CIFS ────────────────────────────── -->
@@ -261,21 +258,21 @@ docker build -f Dockerfile.ubuntu -t leonekwolfik/midnight-commander .</code></p
 
     <h3 style="margin-bottom:.5rem;font-size:1rem;">Option 1 — Browse SMB shares directly inside MC</h3>
     <p style="margin-bottom:.7rem;color:var(--text-dim);">
-      Both images ship with Samba client tools (<code>samba-client</code> on Alpine, <code>smbclient</code> on Ubuntu).
-      In MC press <kbd>Ctrl+\</kbd> or use the <em>cd</em> command bar and type an <code>smb://</code> URL:
+      The Alpine image ships with Samba client tools (<code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">samba-client</code>).
+      In MC press <kbd>Ctrl+\</kbd> or use the <em style="font-style: italic;">cd</em> command bar and type an <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">smb://</em> URL:
     </p>
-    <pre><code>smb://192.168.1.100/sharename
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">smb://192.168.1.100/sharename
 smb://myuser:mypassword@192.168.1.100/sharename</code></pre>
-    <p style="margin-bottom:.7rem;color:var(--text-dim);">You can also use <code>smbclient</code> directly in the built-in shell:</p>
-    <pre><code>smbclient //192.168.1.100/sharename -U myuser</code></pre>
+    <p style="margin-bottom:.7rem;color:var(--text-dim);">You can also use <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">smbclient</em> directly in the built-in shell:</p>
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">smbclient //192.168.1.100/sharename -U myuser</code></pre>
     <p style="color:var(--text-dim);">No host-side packages needed for this option.</p>
 
     <h3 style="margin:1.25rem 0 .5rem;font-size:1rem;">Option 2 — Mount an SMB share as a Docker volume (CIFS driver)</h3>
     <p style="margin-bottom:.7rem;color:var(--text-dim);">
-      Use Docker's built-in <code>cifs</code> volume driver to mount the share before the container starts.
-      Add a named volume to your <code>docker-compose.yml</code>:
+      Use Docker's built-in <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">cifs</em> driver to mount the share before the container starts.
+      Add a named volume to your <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">docker-compose.yml</code>:
     </p>
-    <pre><code>volumes:
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;">volumes:
   smb_share:
     driver: local
     driver_opts:
@@ -283,10 +280,10 @@ smb://myuser:mypassword@192.168.1.100/sharename</code></pre>
       o: "username=myuser,password=mypassword,vers=3.0"
       device: "//192.168.1.100/sharename"</code></pre>
     <p style="margin-bottom:.7rem;color:var(--text-dim);">
-      Then reference <code>smb_share:/data</code> in your service's <code>volumes</code> list.
-      This option requires <code>cifs-utils</code> installed on the <strong>host</strong>:
+      Then reference <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">smb_share:/data</code> in your service's <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">volumes</code> list.
+      This option requires <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">cifs-utils</em> installed on the <strong style="font-weight: 800;">host</strong>:
     </p>
-    <pre><code># Debian/Ubuntu host
+    <pre><code style="font-family: &quot;SFMono-Regular&quot;, Consolas, &quot;Liberation Mono&quot;, Menlo, monospace;"># Debian/Ubuntu host
 sudo apt-get install cifs-utils
 
 # RHEL/CentOS host
@@ -295,8 +292,8 @@ sudo yum install cifs-utils
 # Alpine host
 sudo apk add cifs-utils</code></pre>
     <p style="color:var(--text-dim);">
-      For security, store credentials in a file (<code>/etc/samba/mc-credentials</code>, mode 600) and reference it via
-      <code>o: "credentials=/etc/samba/mc-credentials,vers=3.0"</code> instead of embedding them in the compose file.
+      For security, store credentials in a file (<code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">/etc/samba/mc-credentials</em>, mode 600) and reference it via
+      <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">o: "credentials=/etc/samba/mc-credentials,vers=3.0"</code> instead of embedding them in the compose file.
     </p>
   </div>
 
@@ -314,14 +311,14 @@ sudo apk add cifs-utils</code></pre>
     <table>
       <tr><th>Variable</th><th>Description</th></tr>
       <tr>
-        <td><code>ENTRYPOINT_TEST_MODE</code></td>
-        <td>Set to <code>1</code> to print the detected start directory and exit without launching ttyd (CI use).</td>
+        <td><code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">ENTRYPOINT_TEST_MODE</em></td>
+        <td>Set to <code style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.1em 0.4em; font-size: 0.85em;">1</em> to print the detected start directory and exit without launching ttyd (CI use).</td>
       </tr>
     </table>
   </div>
 
   <!-- ── Footer ─────────────────────────────────── -->
-  <footer>
+  <footer style="text-align: center; padding: 2.5rem 1rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.88rem;">
     <p>
       <a href="https://github.com/leonekwolfik/mc">leonekwolfik/mc</a> ·
       Released under the <a href="https://github.com/leonekwolfik/mc/blob/main/LICENSE">MIT License</a>

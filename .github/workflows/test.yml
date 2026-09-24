@@ -15,8 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - tag: ubuntu
-            dockerfile: Dockerfile.ubuntu
           - tag: alpine
             dockerfile: Dockerfile.alpine
 
