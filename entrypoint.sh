@@ -3,26 +3,23 @@
 
 MOUNT_DIR=""
 
-for dir in /*/; do
-    dirname=$(basename "$dir")
-
-    if grep -qx "$dirname" /etc/system_dirs_snapshot.txt; then
-        continue
-    fi
-
-    [[ "$dirname" == .* ]] && continue
-
-    MOUNT_DIR="/$dirname"
-    break
-done
-
-if [ -z "$MOUNT_DIR" ]; then
+# 1. Preferencyjnie używamy /data (jeśli istnieje i nie jest pusty)
+if [ -d "/data" ] && [ "$(ls -A /data)" ]; then
+    MOUNT_DIR="/data"
+    echo "Użyto /data (zamontowany wolumen)"
+else
+    # 2. Fallback: szukaj w /mnt/* i /opt/*
     for dir in /mnt/* /opt/*; do
-        [ -d "$dir" ] && MOUNT_DIR="$dir" && break
+        if [ -d "$dir" ]; then
+            MOUNT_DIR="$dir"
+            echo "Użyto auto-detekcji: $MOUNT_DIR"
+            break
+        fi
     done
 fi
 
-START_DIR="${MOUNT_DIR:-/root}"
+# Jeśli nic nie znaleziono, użyj domykłowego katalogu użytkownika
+START_DIR="${MOUNT_DIR:-/home/mcuser}"
 echo "Startowanie MC w: $START_DIR"
 
 # Zmienna dostępna dla testów bez uruchamiania ttyd
