@@ -38,7 +38,7 @@ jobs:
           tags: mc-test:${{ matrix.tag }}
 
       - name: Run tests
-        uses: ./.github/actions/docker-tests.yml
+        uses: ./.github/actions/docker-tests
         with:
           image: mc-test:${{ matrix.tag }}
 
