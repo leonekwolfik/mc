@@ -6,4 +6,8 @@ services:
       - "7681:7681"
     volumes:
       - ./data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
     restart: unless-stopped
